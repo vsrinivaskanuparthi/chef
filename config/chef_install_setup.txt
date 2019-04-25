@@ -1,0 +1,122 @@
+
+Chef Installation steps on RHEL 
+
+1) yum update -y
+2) yum install wget unzip tree -y
+3) wget https://packages.chef.io/files/stable/chefdk/3.8.14/el/7/chefdk-3.8.14-1.el7.x86_64.rpm
+4) rpm -Uvh chefdk-3.8.14-1.el7.x86_64.rpm
+5) chef --version
+
+
+
+
+
+
+
+
+
+ 
+
+After chefDk is installed on WS and nodes were ready .
+
+step 1: Create an organisation on your hosted chef. ( https://manage.chef.io )
+step 2 : Download or copy the starter kit of respective organisation onto your Work Station.
+         after downloadling to your laptop copy chef-starter.zip and .pem onto your workstation machine with below 2 commands on gitbash ( your laptop terminal)
+
+ scp -i "redhat-linux.pem" "chef-starter.zip" redhat-linux.pem ec2-user@3.19.29.97:/tmp
+
+          scp -i < path of pem file on your laptop > < path of chef-starter.zip on your laptop > ec2-user@<public-ip of work station>:< workstation path to be copied> 
+               
+          scp -i < path of pem file on your laptop > < path of pem file on your laptop > ec2-user@<public-ip of work station>:< workstation path to be copied>
+
+step 3 : Unzip starter Kit and you will get a folder " chef-repo"
+
+         unzip chef-starter.zip
+
+step 4 : Move into the folder " chef-repo"  and  execute the below commands
+step 5 : Bootstrap your nodes with chef server .
+         
+         knife bootstrap 172.31.38.194 --ssh-user ubuntu --sudo --identity-file /tmp/redhat-linux.pem  -N "ubuntu_node1" (command to bootstrap)
+
+in the above command bootstrap procees the ip is node machine private ip and the knife command should execute under chef-repo file only
+
+
+
+step 6 : create a cookbook as below  under " cookbooks " direcory .
+       
+         chef generate cookbook < cookbook name >
+
++-- chef-repo
+Š   +-- cookbooks
+Š   Š   +-- chefignore
+Š   Š   +-- mycookbook
+Š   Š   Š   +-- Berksfile
+Š   Š   Š   +-- CHANGELOG.md
+Š   Š   Š   +-- chefignore
+Š   Š   Š   +-- LICENSE
+Š   Š   Š   +-- metadata.rb
+Š   Š   Š   +-- README.md
+Š   Š   Š   +-- recipes
+Š   Š   Š   Š   +-- default.rb
+Š   Š   Š   Š  
+
+
+step 7 : create a recipe  under recipes directory
+             vi < filename.rb>
+
+package 'httpd'  do
+  action :install
+end
+
+step 8 : upload cookbook 
+
+         knife cookbook upload < your cookbook name > 
+
+step 9 : adding runlist to the nodes .
+
+        knife node run_list add < nodename> 'recipe[<cookbookname>::<recipename>]'
+
+         knife node run_list add mynode1 'recipe[mycookbook::https_install]'
+
+step 10 : we need to wait for the convergence to happen , or we can do forced convergence 
+           by executimg " chef-client" command on the nodes.
+
+
+roles in chef
+------------------------
+to create role the command is  (knife role create <roleName>
+
+environmets in chef
+------------------------------
+to create environment for nodes the command is (knife environment create <name>)
+to update node environment the command is (knife node update <nodename> (in the json we need to update the environmentName)
+
+
+chef supermarket for already devloped cookbooks
+
+
+
+copying index file from workstation to node when convergence is don
+the process is
+
+
+"recipe[new_roles_httpd::role_install_httpd]",
+"recipe[new_roles_httpd::role_start_httpd]",
+"recipe[new_roles_httpd::role_copy_index]"
+
+knife node list (to list the nodes registered on the chef server)
+knife role list (to list the roles uploaded on the chef server)
+knife role create <roleName>
+at the first time 
+
+
+
+
+
+
+
+
+
+
+
+
