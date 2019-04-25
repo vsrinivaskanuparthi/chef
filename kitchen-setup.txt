@@ -1,0 +1,78 @@
+Work station on RHEL -->
+
+step 1 ) Install aws cli
+-----------------------------------------------------------------------------
+
+curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+
+unzip awscli-bundle.zip
+
+sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+
+export PATH=$PATH:/usr/local/bin/
+
+aws --version
+
+ copy the IAM access key and secret key from aws console.
+
+aws configure
+
+ enter the access keys 
+
+
+step 2 ) navigate to your cookbook
+---------------------------------------------------------------------------------
+
+ls -lart will list the .kitchen.yml
+
+modify as below to spiin up ec2 instance.
+
+
+
+.kitchen.yml
+==========================================================================
+---
+driver:
+  name: ec2
+  aws_ssh_key_id: 31stAug_
+  security_group_ids: ["sg-00e36b085f728ab14"]
+  region: ap-south-1
+  availability_zone: a
+  require_chef_omnibus: true
+  subnet_id: subnet-f0695299
+  instance_type: t2.micro
+  associate_public_ip: true
+provisioner:
+   name: chef_zero
+platforms:
+  - name: ubuntu-16.04
+    driver:
+      image_id: ami-ffc3e790
+    block_device_mappings:
+      - device_name: /dev/sda1
+        ebs:
+          volume_size: 15
+          delete_on_termination: true
+    transport:
+      ssh_key: /root/31stAug_.pem
+      connection_timeout: 300
+      connection_retries: 5
+      username: ubuntu
+suites:
+  - name: default
+    run_list:
+      - recipe[mykitchencb::install_apache]
+
+=====================================================================================
+
+kitchen create 
+
+kitchen converge
+
+kitchen verify (user to run test cases)
+
+kitchen destroy
+
+
+chef-spces (testing framework for chef server)
+
